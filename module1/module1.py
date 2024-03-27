@@ -8,14 +8,15 @@ def DatabaseConnect():
     conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="password",    # 실행 시 비밀번호를 입력하세요.
-            database="wdamDB"
+            password="iamsoyoung@",    # 실행 시 본인의 로컬 비밀번호를 입력하세요.
+            database="wdam"
         )
     cursor=conn.cursor(buffered=True) # 커서 생성
     return conn, cursor
 
 """
 테스트용 데이터베이스 데이터 입력
+후 삭제 예정
 """
 def InsultTestData(cursor):
     from datetime import datetime
@@ -25,46 +26,42 @@ def InsultTestData(cursor):
     # 데이터베이스 초기화(데이터 삭제)
     query = "DELETE FROM UnitBehavior"
     cursor.execute(query)
-    query = "DELETE FROM init"
+    query = "DELETE FROM Unit_List"
     cursor.execute(query)
 
     # 데이터베이스에 데이터 입력
     # UnitBehavior table
-    query = "INSERT INTO UnitBehavior (idx, UnitId, CreatedAt, SimulationTime, BehaviorName, Status) VALUES (%s, %s, %s, %s, %s, %s)"
+    query = "INSERT INTO UnitBehavior (unitId, simulationTime, behaviorName, status, createdAt) VALUES (%s, %s, %s, %s, %s)"
     values = [
-        (1, 2, date_obj, 60, '전술기동', 'Running'),
-        (2, 3, date_obj, 60, '전술기동', 'Running'),
-        (3, 2, date_obj, 150, '전술기동', 'Finished'),
-        (4, 2, date_obj, 180, '전술기동', 'Running'),
-        (5, 2, date_obj, 9180, '전술기동', 'Finished')
+        (2, 60, '전술기동', 'Running', date_obj),
+        (3, 60, '전술기동', 'Running', date_obj),
+        (2, 150, '전술기동', 'Finished', date_obj),
+        (2, 180, '전술기동', 'Running', date_obj),
+        (2, 9180, '전술기동', 'Finished', date_obj)
     ]
     cursor.executemany(query, values)
 
-    # init table
-    query = "INSERT INTO init (UnitId, UnitName, Symbol, Status, Member, Equipment, Supply, CreatedAt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    # UnitList table
+    query = "INSERT INTO Unit_List (unitId, unitName, status) VALUES (%s, %s, %s)"
     values = [
-        (2, 'B-1-1-Unit1', 'SFG-UCI----D---', 'No Damage', '[{소/중위;소총;1;1};{하/중사;소총;4;4};{병;소총;19;19};{병;유탄발사기;6;6};{병;기관총;3;3}]',\
-              '[{개인/공용화기;소총;24;24};{개인/공용화기;K201/M203;6;6};{개인/공용화기;K-3;3;3}]',\
-                '[{직사화기탄;소총탄;3600;3600};{직사화기탄;기관총탄;3000;3000};{직사화기탄;유탄발사기탄;90;90}]', date_obj),
-        (3, 'B-1-1-Unit2', 'SFG-UCI----E---', 'No Damage', '[{소/중위;소총;1;1};{하/중사;소총;4;4};{병;소총;19;19};{병;유탄발사기;6;6};{병;기관총;3;3}]',\
-              '[{개인/공용화기;소총;24;24};{개인/공용화기;K201/M203;6;6};{개인/공용화기;K-3;3;3}]',\
-                '[{직사화기탄;소총탄;3600;3600};{직사화기탄;기관총탄;3000;3000};{직사화기탄;유탄발사기탄;90;90}]', date_obj)
+        (2, "B-1-1-Unit1","0"),
+        (3, "B-1-2-Unit1","0"),
+        (4,"B-1-1-Unit2","1")
     ]
     cursor.executemany(query, values)
-
 """
-brief: 사용자가 선택한 부대의 ID를 init 파일에서 찾기
+brief: 사용자가 선택한 부대의 ID를 Unit_List 테이블에서 찾기
 param1: 부대명
 param2: 데이터베이스 커서
 return: 부대 ID
 """
 def FindID(name, cursor):
     #name='B-1-1-Unit1'
-    query = "SELECT UnitId FROM init WHERE UnitName = %s"
+    query = "SELECT unitId FROM Unit_List WHERE unitName = %s"
     cursor.execute(query, (name,))
     id = cursor.fetchone()
     id=id[0]
-    print("찾아낸 부대의 ID: ", id) # print for test
+    # print("찾아낸 부대의 ID: ", id) # print for test
     return id
 
 """
@@ -74,23 +71,25 @@ param2: 데이터베이스 커서
 return: 추출한 로그
 """
 def Extract_UnitBehavior(id, cursor):
-    query = "SELECT SimulationTime, BehaviorName, Status FROM UnitBehavior WHERE UnitId = %s"
+    query = "SELECT simulationTime, behaviorName, status FROM UnitBehavior WHERE unitId = %s"
     cursor.execute(query, (id,))
     result=cursor.fetchall()
 
-    # # print for test
-    # print("부대 UnitBehavior 추출 정보:")
-    # for row in result:
-    #     print("SimulationTime: ", row[0])
-    #     print("BehaviorName: ", row[1])
-    #     print("Status: ", row[2])
-    #     print("------------------------")
+    """
+    # print for test
+    print("부대 UnitBehavior 추출 정보:")
+    for row in result:
+        print("SimulationTime: ", row[0])
+        print("BehaviorName: ", row[1])
+        print("Status: ", row[2])
+        print("------------------------")
+    """
     
     # Chat GPT에게 넘겨주기 위해 데이터프레임->텍스트로 변환
     import pandas as pd
     # 추출한 데이터로부터 데이터프레임 생성
     dataframe=pd.DataFrame(result, columns=['SimulationTime', 'BehaviorName', 'Status'])
-    print(dataframe)
+    # print(dataframe) # print for test
     # 텍스트로 변환
     input_texts=[]
     for index, row in dataframe.iterrows():
@@ -98,8 +97,8 @@ def Extract_UnitBehavior(id, cursor):
         input_texts.append(text)
     
     input_texts='\n'.join(input_texts)
-    # print for text
-    print("추출한 로그"+input_texts)
+    # print for test
+    # print("추출한 로그"+input_texts)
 
     return input_texts
 
@@ -133,8 +132,8 @@ import mysql.connector
 conn, cursor=DatabaseConnect()
 
 InsultTestData(cursor)
-name='B-1-1-Unit1' # 테스트용 분석 대상
 
+name='B-1-1-Unit1' # 테스트용 분석 대상
 id=FindID(name, cursor)
 input_texts=Extract_UnitBehavior(id, cursor)
 
@@ -159,33 +158,3 @@ messages = [
 
 preprocessed_data=DataPreprocessing(openai, messages)
 print(preprocessed_data)
-
-
-"""
-분석
-"""
-
-def AnaylizeData(openai,messages):
-    chat_completion = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=messages
-    )
-
-    result=chat_completion.choices[0].message.content
-    return result
-
-"""
-다른 특성 구현 시
-messages를 특성별로 user를 바꿔야 함.
-"""
-messages = [
-    {"role": "system", "content": "당신은 주어진 데이터를 분석해야 합니다."},
-    {"role": "user", "content": "데이터를 분석하여 해당 부대가 주로 수행한 과업은 무엇인지, \
-     각 과업에 소요한 시간은 얼마인지, 무슨 과업을 수행했는지 등을 알려주세요.\
-     예시: 청군 1대대-1중대는 최초 전술기동 후 점령 과업을 수행하였습니다.\
-    부대가 주로 수행한 과업은 '점령'입니다.       "},
-    {"role": "assistant", "content": preprocessed_data+"부대 이름: "+name}
-]
-
-result=AnaylizeData(openai, messages)
-print(result)
