@@ -8,7 +8,7 @@ def DatabaseConnect():
     conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="iamsoyoung@",    # 실행 시 본인의 로컬 비밀번호를 입력하세요.
+            password="-",    # 실행 시 본인의 로컬 비밀번호를 입력하세요.
             database="wdam"
         )
     cursor=conn.cursor(buffered=True) # 커서 생성
