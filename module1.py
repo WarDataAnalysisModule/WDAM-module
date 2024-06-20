@@ -145,7 +145,6 @@ if __name__ == "__main__":
 
     id = FindID(name, cursor)
 
-    DatabaseDeconnect(conn, cursor)
 
     # ChatGPT Connect
     os.environ.get('OPENAI_API_KEY') is None
@@ -164,4 +163,5 @@ if __name__ == "__main__":
     with open("src/main/java/com/back/wdam/analyze/resources/preprocessedData.txt", "w", encoding="utf-8") as file:
         file.write(preprocessed_data)
 
+    DatabaseDeconnect(conn, cursor)
     print(preprocessed_data)
