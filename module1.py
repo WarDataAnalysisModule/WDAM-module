@@ -82,6 +82,44 @@ def Extract_UnitBehavior(id, cursor):
 ###################################################################################################
 
 """
+brief: '부대 전투력' 특성 전처리를 위한 로그 선택
+param1: 부대 ID
+param2: 데이터베이스 커서
+return: 추출한 로그
+"""
+def Extract_Unit_CombatCapability(id, cursor):
+    query = """
+    SELECT simulation_time, damage_state, power
+    FROM (
+        SELECT
+            simulation_time,
+            damage_state,
+            power,
+            LAG(power) OVER (ORDER BY simulation_time) AS prev_power
+        FROM unit_attributes
+        WHERE list_idx = %s
+    ) subquery
+    WHERE power != prev_power OR prev_power IS NULL
+    """
+    cursor.execute(query, (id, ))
+    result = cursor.fetchall()
+
+    # 추출한 데이터로부터 데이터프레임 생성
+    dataframe = pd.DataFrame(result, columns=['SimulationTime', 'DamageState', 'Power'])
+
+    # 텍스트로 변환
+    input_texts = []
+    for index, row in dataframe.iterrows():
+        text = f"SimulationTime: {row['SimulationTime']}, DamageState: {row['DamageState']}, Power: {row['Power']}"
+        input_texts.append(text)
+
+    input_texts = '\n'.join(input_texts)
+    print(input_texts)
+    return input_texts
+
+###################################################################################################
+
+"""
 brief: ChatGPT가 전처리 데이터 생성 명령
 param1: 추출된 로그로 작성된 메시지
 return: 전처리 데이터 텍스트
@@ -128,6 +166,21 @@ def CreateMessage(characteristic, input_texts):
             )},
             {"role": "assistant", "content": input_texts}
         ]
+    elif characteristic == "부대 전투력":
+        messages = [
+            {"role": "system", "content": "당신은 주어진 데이터를 분석에 용이한 형태로 전처리해야 합니다."},
+            {"role": "user", "content": (
+                "Simulation Time과 DamgeState를 이용하여 모든 Power의 상태와 시작 시각을 알려주세요. "
+                "다음 예시를 참고하여 형식에 맞춰 알려주세요. "
+                "Power: 100\n"
+                "- 시작 시각: 30\n"
+                "- 상태: NoDamage\n"
+                "Power: 63\n"
+                "- 시작 시각: 8670\n"
+                "- 상태: SlightDamage\n"
+            )},
+            {"role": "assistant", "content": input_texts}
+        ]
     return messages
 
 ###################################################################################################
@@ -154,6 +207,9 @@ if __name__ == "__main__":
 
     if characteristic == "부대 행동":
         input_texts = Extract_UnitBehavior(id, cursor)
+        messages = CreateMessage(characteristic, input_texts)
+    elif characteristic == "부대 전투력":
+        input_texts = Extract_Unit_CombatCapability(id, cursor)
         messages = CreateMessage(characteristic, input_texts)
     else:
         messages = []

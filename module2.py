@@ -28,6 +28,15 @@ def CreateMessage(characteristic, preprocessed_data, name):
              부대가 주로 수행한 과업은 '점령'입니다.       "},
             {"role": "assistant", "content": preprocessed_data+"부대 이름: "+name}
         ]
+    elif characteristic == "부대 전투력":
+        messages = [
+            {"role": "system", "content": "당신은 주어진 데이터를 분석해야 합니다."},
+            {"role": "user", "content": "데이터를 분석하여 해당 부대의 전투력이 변화된 시각이 언제부터 언제인지, \
+             최초 power와 마지막으로 기록된 power를 말해주고, 이들을 비교해서 전투력이 얼마나 감소했는지를 아래와 같은 형식으로 알려주세요.\
+             예시: 청군 1대대-1중대의 전투력이 변화된 시각은 1040부터 8940입니다. \
+             처음 기록된 전투력은 100이었고, 마지막으로 기록된 전투력은 60으로, 초기에 비해 40% 감소하였습니다.      "},
+            {"role": "assistant", "content": preprocessed_data+"부대 이름: "+name}
+        ]
     return messages
 
 
@@ -52,6 +61,8 @@ if __name__ == "__main__":
         print("인자 전달 개수 이상")
 
     if characteristic == "부대 행동":
+        messages = CreateMessage(characteristic, preprocessed_data, name)
+    elif characteristic == "부대 전투력":
         messages = CreateMessage(characteristic, preprocessed_data, name)
 
     result=AnaylizeData(openai, messages)
