@@ -276,6 +276,6 @@ if __name__ == "__main__":
     # 파일로 저장
     with open("src/main/java/com/back/wdam/analyze/resources/preprocessedData.txt", "w", encoding="utf-8") as file:
         file.write(preprocessed_data)
-    
+
     DatabaseDeconnect(conn, cursor)
     print(preprocessed_data)
