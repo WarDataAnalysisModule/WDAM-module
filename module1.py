@@ -82,7 +82,7 @@ def Extract_UnitBehavior(id, cursor):
 ###################################################################################################
 
 """
-brief: '부대 전투력' 특성 전처리를 위한 로그 선택
+brief: '부대의 전투력' 특성 전처리를 위한 로그 선택
 param1: 부대 ID
 param2: 데이터베이스 커서
 return: 추출한 로그
@@ -114,7 +114,49 @@ def Extract_Unit_CombatCapability(id, cursor):
         input_texts.append(text)
 
     input_texts = '\n'.join(input_texts)
-    print(input_texts)
+    return input_texts
+
+###################################################################################################
+
+"""
+brief: '부대의 피해상황' 특성 전처리를 위한 로그 선택
+param1: 부대 ID
+param2: 데이터베이스 커서
+return: 추출한 로그
+"""
+def Extract_Unit_DamageStatus(id, cursor):
+    query = """
+    SELECT 
+        CASE
+            WHEN target_list_idx = %s THEN target_equipment
+        END AS Equipment,
+        CASE
+            WHEN target_list_idx = %s THEN target_member
+        END AS Member,
+        CASE
+            WHEN target_list_idx = %s THEN target_supply
+        END AS Supply,
+        simulation_time,
+        behavior_name,
+        CASE
+            WHEN target_list_idx = %s THEN source_list_idx
+        END AS Enemy
+    FROM event
+    WHERE target_list_idx = %s
+    """
+    cursor.execute(query, (id, id, id, id, id))
+    result = cursor.fetchall()
+
+    # 추출한 데이터로부터 데이터프레임 생성
+    dataframe = pd.DataFrame(result, columns=['Equipment', 'Member', 'Supply', 'SimulationTime', 'BehaviorName', 'Enemy'])
+
+    # 텍스트로 변환
+    input_texts = []
+    for index, row in dataframe.iterrows():
+        text = f"SimulationTime: {row['SimulationTime']}, Equipment: {row['Equipment']}, Member: {row['Member']}, Supply: {row['Supply']}, BehaviorName: {row['BehaviorName']}, Enemy: {row['Enemy']}"
+        input_texts.append(text)
+
+    input_texts = '\n'.join(input_texts)
     return input_texts
 
 ###################################################################################################
@@ -166,7 +208,7 @@ def CreateMessage(characteristic, input_texts):
             )},
             {"role": "assistant", "content": input_texts}
         ]
-    elif characteristic == "부대 전투력":
+    elif characteristic == "부대의 전투력":
         messages = [
             {"role": "system", "content": "당신은 주어진 데이터를 분석에 용이한 형태로 전처리해야 합니다."},
             {"role": "user", "content": (
@@ -178,6 +220,19 @@ def CreateMessage(characteristic, input_texts):
                 "Power: 63\n"
                 "- 시작 시각: 8670\n"
                 "- 상태: SlightDamage\n"
+            )},
+            {"role": "assistant", "content": input_texts}
+        ]
+    elif characteristic == "부대의 피해 상황":
+        messages = [
+            {"role": "system", "content": "당신은 주어진 데이터를 분석에 용이한 형태로 전처리해야 합니다."},
+            {"role": "user", "content": (
+                "-가 있는 행을 뺀 나머지 중에 마지막으로 작성된 Simulation Time, Equipment, Memeber, Supply을 알려주세요. "
+                "아래와 같은 형식에 맞춰 알려주세요. "
+                "SimulationTime: 8610\n"
+                "- Equipment: {개인/공용화기;소총;24;20};{개인/공용화기;K201/M203;6;5};{개인/공용화기;K-3;3;3}\n"
+                "- Memeber: {소/중위;소총;1;1};{하/중사;소총;4;4};{병;소총;19;15};{병;유탄발사기;6;5};{병;기관총;3;3}\n"
+                "- Supply: {직사화기탄;소총탄;3600;3600};{직사화기탄;기관총탄;3000;3000};{직사화기탄;유탄발사기탄;90;90}\n"
             )},
             {"role": "assistant", "content": input_texts}
         ]
@@ -198,7 +253,6 @@ if __name__ == "__main__":
 
     id = FindID(name, cursor)
 
-    DatabaseDeconnect(conn, cursor)
 
     # ChatGPT Connect
     os.environ.get('OPENAI_API_KEY') is None
@@ -208,8 +262,11 @@ if __name__ == "__main__":
     if characteristic == "부대 행동":
         input_texts = Extract_UnitBehavior(id, cursor)
         messages = CreateMessage(characteristic, input_texts)
-    elif characteristic == "부대 전투력":
+    elif characteristic == "부대의 전투력":
         input_texts = Extract_Unit_CombatCapability(id, cursor)
+        messages = CreateMessage(characteristic, input_texts)
+    elif characteristic == "부대의 피해 상황":
+        input_texts = Extract_Unit_DamageStatus(id, cursor)
         messages = CreateMessage(characteristic, input_texts)
     else:
         messages = []
@@ -219,5 +276,6 @@ if __name__ == "__main__":
     # 파일로 저장
     with open("src/main/java/com/back/wdam/analyze/resources/preprocessedData.txt", "w", encoding="utf-8") as file:
         file.write(preprocessed_data)
-
+    
+    DatabaseDeconnect(conn, cursor)
     print(preprocessed_data)
