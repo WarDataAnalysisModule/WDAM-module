@@ -121,7 +121,6 @@ def CreateMessage(characteristic, preprocessed_data, name, std_config_path):
     return messages
 
 
-
 # -*- coding: utf-8 -*-
 import sys
 
