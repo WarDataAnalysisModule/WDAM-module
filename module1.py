@@ -92,6 +92,7 @@ def Extract_UnitSpeed(id, user_idx, log_created, cursor):
     return input_texts
 
 ###################################################################################################
+
 """
 brief: '2. 인원/장비 수량 변화' 특성 로그 선택
 param1: 부대 ID
@@ -303,6 +304,7 @@ def Extract_ObjectDetection(id, user_idx, log_created, cursor):
 
     input_texts='\n'.join(input_texts)
     return input_texts
+###################################################################################################
 
 """
 brief: '7. 부대 정보' 특성 전처리를 위한 로그 선택
@@ -333,10 +335,13 @@ def Extract_info(user_idx, log_created, cursor):
 
     input_texts='\n'.join(input_texts)
     return input_texts
+
 ###################################################################################################
 
 """
 brief: 6번 개체 탐지 속성 분석 시 DB에서 읽어온 데이터 정리
+param1: 전처리 데이터
+return: 전처리 데이터(형식을 알아보기 쉽게)
 """
 def extract_data(input_texts):
     # 정규 표현식을 사용하여 각 값을 추출하는 패턴 설정
