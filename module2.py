@@ -118,13 +118,16 @@ def CreateMessage(characteristic, preprocessed_data, name, std_config_path):
                 - 초기 보급품: 소총탄 3600발, 기관총탄 3000발, 유탄발사기탄 90발"},
             {"role": "assistant", "content": preprocessed_data}
         ]
-    
     return messages
+
+
 
 # -*- coding: utf-8 -*-
 import sys
 
 if __name__ == "__main__":
+
+    print("***************\n\n module 2 is processing \n\n***************")
 
     # ChatGPT Connect
     import os
@@ -164,6 +167,8 @@ if __name__ == "__main__":
         messages = CreateMessage(characteristic, preprocessed_data, name, std_config_path)
     elif characteristic == "부대 정보":
         messages = CreateMessage(characteristic, preprocessed_data, name, std_config_path)
+    else:
+        messages=[]
 
     result=AnaylizeData(openai, messages)
 

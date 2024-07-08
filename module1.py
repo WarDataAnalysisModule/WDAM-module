@@ -32,10 +32,7 @@ return: conn, cursor 객체
 """
 def DatabaseConnect():
     conn = mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="",
-                database="wdam"
+                
             )
     cursor=conn.cursor(buffered=True) # 커서 생성
     return conn, cursor
@@ -240,6 +237,7 @@ def Extract_Unit_DamageStatus(id, user_idx, log_created, cursor):
     return input_texts
 
 ###################################################################################################
+
 """
 brief: '5. 부대 행동' 특성 전처리를 위한 로그 선택
 param1: 부대 ID
@@ -285,8 +283,8 @@ def Extract_ObjectDetection(id, user_idx, log_created, cursor):
       AND created_at = %s 
       AND detected_entity_id != '[]'
     """
-
     cursor.execute(query, (id, user_idx, log_created,))
+
     result=cursor.fetchall()
 
     # 추출한 데이터로부터 데이터프레임 생성
@@ -300,7 +298,6 @@ def Extract_ObjectDetection(id, user_idx, log_created, cursor):
 
     input_texts='\n'.join(input_texts)
     return input_texts
-###################################################################################################
 
 """
 brief: '7. 부대 정보' 특성 전처리를 위한 로그 선택
@@ -560,6 +557,7 @@ def CreateMessage(characteristic, input_texts):
             )},
             {"role": "assistant", "content": input_texts}
         ]
+
     return messages
 
 ###################################################################################################
