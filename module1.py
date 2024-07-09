@@ -32,12 +32,10 @@ return: conn, cursor 객체
 """
 def DatabaseConnect():
     conn = mysql.connector.connect(
-            conn = mysql.connector.connect(
             host="localhost",
             user="root",
             password="",
             database="wdam"
-        )
             )
     cursor=conn.cursor(buffered=True) # 커서 생성
     return conn, cursor
