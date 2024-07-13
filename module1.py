@@ -32,11 +32,8 @@ return: conn, cursor 객체
 """
 def DatabaseConnect():
     conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="wdam"
-            )
+
+    )
     cursor=conn.cursor(buffered=True) # 커서 생성
     return conn, cursor
 
@@ -93,16 +90,16 @@ split_input_texts_3는 3개로 자른다.
 def split_input_texts_2(input_texts):
     header = input_texts[0]  # 첫 번째 줄은 헤더
     split_index = 150  # 헤더 포함 150번째 인덱스를 기준으로 분할 (즉, 150번째 데이터 행 이후)
-    
+
     input_texts1 = input_texts[:split_index]
     input_texts2 = [header] + input_texts[split_index:]
-    
+
     return input_texts1, input_texts2
 
 def split_input_texts_3(input_texts):
     header = input_texts[0]  # 첫 번째 줄은 헤더
     total_lines = len(input_texts)
-    
+
     # 헤더를 제외한 데이터의 시작 인덱스
     data_start_index = 1
 
@@ -113,7 +110,7 @@ def split_input_texts_3(input_texts):
     input_texts1 = input_texts[:part1_end_index]
     input_texts2 = [header] + input_texts[part1_end_index:part2_end_index]
     input_texts3 = [header] + input_texts[part2_end_index:]
-    
+
     return input_texts1, input_texts2, input_texts3
 ###################################################################################################
 
@@ -148,12 +145,12 @@ def Extract_Event(id, user_idx, log_created, cursor):
               FROM event WHERE (source_list_idx = %s OR target_list_idx = %s) AND created_at=%s AND user_idx=%s"
     cursor.execute(query2, (id,id,log_created,user_idx))
     result2=cursor.fetchall()
-    
+
     # 추출한 데이터로부터 데이터프레임 생성
-    dataframe2=pd.DataFrame(result2, columns=['source_list_idx', 'target_list_idx', 'simulation_time', 'source_member',\
-                                              'target_member', 'source_equipment', 'target_equipment',\
-                                                 'source_supply', 'target_supply'])
-    
+    dataframe2=pd.DataFrame(result2, columns=['source_list_idx', 'target_list_idx', 'simulation_time', 'source_member', \
+                                              'target_member', 'source_equipment', 'target_equipment', \
+                                              'source_supply', 'target_supply'])
+
     # 데이터프레임의 길이
     df_length = len(dataframe2)
     input_texts.append("사격 이벤트 기록\n")
@@ -461,31 +458,31 @@ def CreateMessage(characteristic, input_texts):
             {
                 "role": "user",
                 "content": "데이터는 다음과 같은 필드로 이루어져 있습니다.. "
-                "simulation time(시간 sec), positionLat(위도), positionLon(경도), positionAlt(고도), speed(이동 속도 km/h).\n"
-                "첫 번째 행의 데이터와 마지막 행의 데이터 사이의 simulationTime을 기준으로 300초 간격의 데이터들을 추출하세요.\n"
-                "추출한 데이터에는 반드시 첫 번째 행의 데이터와 마지막 행의 데이터가 있어야 합니다.\n"
-                "다음 예시를 참고하여 형식에 맞춰 알려주세요.\n\n"
-                "이 예시에서 첫 번째 데이터는 simulaition time이 10일 때이고, 마지막 데이터는 simulation time이 3100일 때입니다.\n"
-                "결과는 다음과 같아야 합니다. 문장 없이 다음과 같은 형식으로만 답하세요.\n\n"
-                "10\t30.0\t100.0\t50.0\t2\n"
-                "310\t31.0\t120.0\t50.0\t2\n"
-                "610\t32.1\t100.0\t50.0\t2\n"
-                "910\t32.1\t100.0\t50.0\t2\n"
-                "1210\t32.1\t100.0\t50.0\t2\n"
-                "1510\t32.1\t100.0\t50.0\t2\n"
-                "1810\t32.1\t100.0\t50.0\t2\n"
-                "2110\t32.1\t100.0\t50.0\t2\n"
-                "2410\t32.1\t100.0\t50.0\t2\n"
-                "2710\t32.1\t100.0\t50.0\t2\n"
-                "3010\t32.1\t100.0\t50.0\t2\n"
-                "3100\t32.1\t100.0\t50.0\t2\n"
+                           "simulation time(시간 sec), positionLat(위도), positionLon(경도), positionAlt(고도), speed(이동 속도 km/h).\n"
+                           "첫 번째 행의 데이터와 마지막 행의 데이터 사이의 simulationTime을 기준으로 300초 간격의 데이터들을 추출하세요.\n"
+                           "추출한 데이터에는 반드시 첫 번째 행의 데이터와 마지막 행의 데이터가 있어야 합니다.\n"
+                           "다음 예시를 참고하여 형식에 맞춰 알려주세요.\n\n"
+                           "이 예시에서 첫 번째 데이터는 simulaition time이 10일 때이고, 마지막 데이터는 simulation time이 3100일 때입니다.\n"
+                           "결과는 다음과 같아야 합니다. 문장 없이 다음과 같은 형식으로만 답하세요.\n\n"
+                           "10\t30.0\t100.0\t50.0\t2\n"
+                           "310\t31.0\t120.0\t50.0\t2\n"
+                           "610\t32.1\t100.0\t50.0\t2\n"
+                           "910\t32.1\t100.0\t50.0\t2\n"
+                           "1210\t32.1\t100.0\t50.0\t2\n"
+                           "1510\t32.1\t100.0\t50.0\t2\n"
+                           "1810\t32.1\t100.0\t50.0\t2\n"
+                           "2110\t32.1\t100.0\t50.0\t2\n"
+                           "2410\t32.1\t100.0\t50.0\t2\n"
+                           "2710\t32.1\t100.0\t50.0\t2\n"
+                           "3010\t32.1\t100.0\t50.0\t2\n"
+                           "3100\t32.1\t100.0\t50.0\t2\n"
             },
             {   "role":"assistant","content": "전처리해야 하는 데이터:\n"+input_texts}
         ]
     elif characteristic=="인원/장비 수량 변화": #2
         messages = [
             {"role": "system", "content": "당신은 주어진 데이터를 분석에 용이한 형태로 전처리해야 합니다."},
-            {"role": "user", "content": 
+            {"role": "user", "content":
                 "이 데이터는 순서대로 '해당 부대의 초기 상태 및 인원, 장비 수량', '사격 이벤트 기록', '마지막 전투 기록', '전체 부대 목록'이다.\n"
                 "'사격 이벤트 기록'에서 source는 공격의 주체이고 target은 공격의 대상이다. 해당 부대는 source일수도, target일 수도 있다. \n"
                 "'해당 부대의 초기 상태 및 인원, 장비 수량'을 이용하여 최대 값이 아닌 현재 값을 기준으로 초기 인원, 장비 수량을 명시하라.\n"
@@ -529,7 +526,7 @@ def CreateMessage(characteristic, input_texts):
                 "4. A-1-1과 교전한 부대 목록:\n"
                 "- B-13\n"
                 "- B-14\n"
-            },
+             },
             {"role": "assistant", "content": input_texts}
         ]
     elif characteristic == "부대의 전투력": # 3
@@ -711,9 +708,8 @@ if __name__ == "__main__":
     else:
         name = None
 
-    
-
-    id = FindID(name, user_idx, log_created, cursor)
+    if name != None:
+        id = FindID(name, user_idx, log_created, cursor)
 
     # ChatGPT Connect
     os.environ.get('OPENAI_API_KEY') is None
