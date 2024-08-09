@@ -113,6 +113,7 @@ def CreateMessage(characteristic, preprocessed_data, name, std_config_path):
             {"role": "system", "content": "당신은 주어진 데이터를 분석해야 합니다."},
             {"role": "user", "content": "데이터를 분석하여 해당 부대에서 power가 가장 많이 줄어든 시간대와 행동이름을 알려주고 \
              부대의 주요 BehaviorName의 종류와 해당 BehaviorName이 포함된 데이터의 비율을 알려주세요.\
+             그리고 SimulationTime과 Power를 가지고 그래프를 그릴 코드를 작성해 주세요.\
              아래와 같은 문장형식으로 알려주세요.\
              예시: \
              청군 4중대-2기관총분대는 2:40에 근접전투로 인하여 가장 큰 손실이 발생하였습니다.\
@@ -246,9 +247,44 @@ if __name__ == "__main__":
 
     # 전처리된 데이터를 작성할 경로
     output_file_path = os.path.join(os.getcwd(), "result.txt")
-    # 파일에 데이터 쓰기
-    with open(output_file_path, "w", encoding="utf-8") as file:
-        file.write(result)
+    
+    # 그래프 그리기
+    if characteristic == "부대의 피해 상황":
+        # 분석 결과와 코드 분리
+        start_code = result.find("```python")
+        end_code = result.find("```", start_code + 1)
+
+        if start_code != -1 and end_code != -1:
+            analysis_text = result[:start_code].strip()  # 분석 결과
+            code_to_execute = result[start_code + 9:end_code].strip()  # 코드 블록
+        else:
+            analysis_text = result.strip()
+            code_to_execute = ""
+        
+        print(analysis_text)
+
+        # 분석 결과를 파일로 저장
+        with open(output_file_path, "w", encoding="utf-8") as file:
+            file.write(analysis_text)
+
+        # 코드가 있으면 실행하고 그래프를 저장
+        if code_to_execute:
+            try:
+                # matplotlib을 불러옴
+                import matplotlib.pyplot as plt
+                # 안전하게 코드 실행하기
+                code_to_execute = code_to_execute.replace('plt.show()', '')  # plt.show() 제거
+                exec(code_to_execute)
+                # 그래프를 이미지 파일로 저장
+                plt.savefig("src/main/java/com/back/wdam/analyze/resources/graph.png")         #!수정 필요!
+                plt.close()
+            except Exception as e:
+                print(f"코드를 실행하는 중 오류가 발생했습니다: {e}")
+                
+    else:          
+        # 파일에 데이터 쓰기
+        with open(output_file_path, "w", encoding="utf-8") as file:
+            file.write(result)
 
     print(f"Data written to {output_file_path}")
 
