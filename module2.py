@@ -4,7 +4,7 @@
 """
 def AnaylizeData(openai,messages):
     chat_completion = openai.chat.completions.create(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-4o",
         messages=messages
     )
 
@@ -15,7 +15,7 @@ def AnaylizeData(openai,messages):
 
 """
 breif: ChatGPT API에 입력할 메시지 작성
-param1: input_texts 추출한 로그
+param1: 분석 특성, 전처리 데이터, 부대명, 분석 기준 파일명
 """
 def CreateMessage(characteristic, preprocessed_data, name, std_config_path):
     messages = []
@@ -113,7 +113,6 @@ def CreateMessage(characteristic, preprocessed_data, name, std_config_path):
             {"role": "system", "content": "당신은 주어진 데이터를 분석해야 합니다."},
             {"role": "user", "content": "데이터를 분석하여 해당 부대에서 power가 가장 많이 줄어든 시간대와 행동이름을 알려주고 \
              부대의 주요 BehaviorName의 종류와 해당 BehaviorName이 포함된 데이터의 비율을 알려주세요.\
-             그리고 SimulationTime과 Power를 가지고 그래프를 그릴 코드를 작성해 주세요.\
              아래와 같은 문장형식으로 알려주세요.\
              예시: \
              청군 4중대-2기관총분대는 2:40에 근접전투로 인하여 가장 큰 손실이 발생하였습니다.\
@@ -194,6 +193,42 @@ def CreateMessage(characteristic, preprocessed_data, name, std_config_path):
         ]
     return messages
 
+###################################################################################################
+
+"""
+breif: 시각자료 생성 시 ChatGPT API에 입력할 메시지 작성
+param1: 전처리 데이터와 저장할 이미지 파일 명
+"""
+def CreateImage(characteristic, preprocessed_data, img_name):
+    messages = []
+    if characteristic == "부대 이동 속도/위치 변화":
+        messages = [
+            {"role": "system", "content": "당신은 목적에 맞는 파이썬 코드를 작성해야 합니다."},
+            {"role": "user", "content": 
+             "데이터는 다음 필드로 구성되어 있습니다."
+             "simulation time(관측시간 sec), positionLat(위도), positionLong(경도), positionAlt(고도), speed(이동 속도 km/h)\n"
+             "주어진 데이터에서 simulation time에 따른 speed의 변화를 그래프로 그리고 이미지 파일을 저장하세요."
+             "이때 이미지 파일명은 "+img_name+"이어야 합니다."
+             "그래프의 제목은 'Speed changes over time'이고, y축은 speed, x축은 simulation time이어야 합니다."
+             "어떤 부연 설명 없이 바로 실행할 수 있도록 오직 코드만 작성해주세요."
+             "예를 들어 ```python 같은 불필요한 표시 없이"
+             "import matplotlib.pyplot as plt로 시작하여 plt.savefig('"+img_name+"')처럼 이미지를 저장하세요."},
+            {"role": "assistant", "content": preprocessed_data}
+        ]
+    elif characteristic == "부대의 피해 상황":
+        messages = [
+            {"role": "system", "content": "당신은 목적에 맞는 파이썬 코드를 작성해야 합니다."},
+             {"role": "user", "content": 
+             "주어진 데이터에서 simulation time에 따른 power의 변화를 그래프로 그리고 이미지 파일을 저장하세요."
+             "이때 이미지 파일명은 "+img_name+"이어야 합니다."
+             "그래프의 제목은 'Power changes over time'이고, y축은 power, x축은 simulation time이어야 합니다."
+             "어떤 부연 설명 없이 바로 실행할 수 있도록 오직 코드만 작성해주세요."
+             "예를 들어 ```python 같은 불필요한 표시 없이"
+             "import matplotlib.pyplot as plt로 시작하여 plt.savefig('"+img_name+"')처럼 이미지를 저장하세요."},
+            {"role": "assistant", "content": preprocessed_data}
+        ]
+    return messages
+
 
 # -*- coding: utf-8 -*-
 import sys
@@ -243,49 +278,68 @@ if __name__ == "__main__":
     else:
         messages=[]
 
+    # 분석 실행
     result=AnaylizeData(openai, messages)
 
-    # 전처리된 데이터를 작성할 경로
+    # 분석 결과를 작성할 경로
     output_file_path = os.path.join(os.getcwd(), "result.txt")
-    
-    # 그래프 그리기
-    if characteristic == "부대의 피해 상황":
-        # 분석 결과와 코드 분리
-        start_code = result.find("```python")
-        end_code = result.find("```", start_code + 1)
-
-        if start_code != -1 and end_code != -1:
-            analysis_text = result[:start_code].strip()  # 분석 결과
-            code_to_execute = result[start_code + 9:end_code].strip()  # 코드 블록
-        else:
-            analysis_text = result.strip()
-            code_to_execute = ""
-        
-        print(analysis_text)
-
-        # 분석 결과를 파일로 저장
-        with open(output_file_path, "w", encoding="utf-8") as file:
-            file.write(analysis_text)
-
-        # 코드가 있으면 실행하고 그래프를 저장
-        if code_to_execute:
-            try:
-                # matplotlib을 불러옴
-                import matplotlib.pyplot as plt
-                # 안전하게 코드 실행하기
-                code_to_execute = code_to_execute.replace('plt.show()', '')  # plt.show() 제거
-                exec(code_to_execute)
-                # 그래프를 이미지 파일로 저장
-                plt.savefig("src/main/java/com/back/wdam/analyze/resources/graph.png")         #!수정 필요!
-                plt.close()
-            except Exception as e:
-                print(f"코드를 실행하는 중 오류가 발생했습니다: {e}")
-                
-    else:          
-        # 파일에 데이터 쓰기
-        with open(output_file_path, "w", encoding="utf-8") as file:
+    # 파일에 분석 결과 쓰기
+    with open(output_file_path, "w", encoding="utf-8") as file:
             file.write(result)
-
     print(f"Data written to {output_file_path}")
 
     print(result)
+    
+    # 시각 자료 생성
+    img_name="" # 시각 자료 파일명
+    if characteristic=="부대 이동 속도/위치 변화" or characteristic=="부대의 피해 상황":
+
+        # 파일명 중복을 피하기 위해 생성 시간으로 파일명 저장
+        from datetime import datetime
+        img_name=str(datetime.now())+".png" 
+        img_name=img_name.replace(":","_")
+        # 그래프 그리는 코드 생성
+        messages=CreateImage(characteristic, preprocessed_data, name, img_name)
+        code=AnaylizeData(openai, messages)
+        code = code.replace("```python", " ").replace("```", " ")
+        
+        try:
+            # 코드 실행
+            exec(code)
+            print("python module is making graph for ", characteristic)
+        except Exception as e:
+            # 코드 실행 실패 시 이미지 파일명 초기화
+            img_name=""
+            print("python module error while making graph for ", characteristic)
+    else: # 다른 특성인 경우 이미지 파일 x
+        img_name=""         
+        
+    import boto3
+    # 실행 시 키 입력
+    AWS_ACCESS_KEY_ID=""
+    AWS_SECRET_ACCESS_KEY = ""
+    AWS_DEFAULT_REGION = ""
+
+    client = boto3.client('s3',
+                      aws_access_key_id=AWS_ACCESS_KEY_ID,
+                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                      region_name=AWS_DEFAULT_REGION
+                      )
+    
+    bucket = ''           #버켓 주소, 실행 시 입력
+    key = img_name # s3에 저장될 이름
+
+    # s3 버킷에 이미지 업로드
+    client.upload_file(
+        img_name, bucket, key,
+        ExtraArgs={'ContentType': 'image/png'}  # Content-Type 설정
+    )
+    
+    url="" # s3에 업로드된 파일에 접근할 수 있는 경로
+    if img_name!="": # 시각 자료를 성공적으로 생성한 경우 url 생성
+        url="실행 시 버킷 url 입력"+img_name
+    print("url: ",url)
+
+    # img_url에 시각자료 경로 저장
+    with open("img_url.txt","w",encoding="utf-8") as file:
+        file.write(url)

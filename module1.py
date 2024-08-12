@@ -9,13 +9,18 @@ def install_package(package):
 required_packages = [
     "mysql-connector-python",
     "pandas",
-    "openai"
+    "openai",
+    "matplotlib",
+    "boto3"
 ]
 
 # 패키지 설치
 for package in required_packages:
     try:
-        __import__(package)
+        if package == "matplotlib":
+            __import__("matplotlib.pyplot")
+        else:
+            __import__(package)
     except ImportError:
         install_package(package)
 
@@ -426,7 +431,7 @@ return: 전처리 데이터 텍스트
 """
 def DataPreprocessing(openai, messages):
     chat_completion = openai.chat.completions.create(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-4o",
         messages=messages
     )
 
@@ -722,22 +727,9 @@ if __name__ == "__main__":
 
     if characteristic == "부대 이동 속도 / 위치 변화":
         input_texts=Extract_UnitSpeed(id, user_idx, log_created, cursor)
-        # 긴 데이터는 잘라서 넣기(3개로 나눔)
-        input_texts1, input_texts2, input_texts3=split_input_texts_3(input_texts)
-        input_texts1='\n'.join(input_texts1)
-        input_texts2='\n'.join(input_texts2)
-        input_texts3='\n'.join(input_texts3)
-        # chatGPT에도 3번에 나누어 전달
-        messages1=CreateMessage(characteristic, input_texts1)
-        preprocessed_data1=DataPreprocessing(openai, messages1)
-        if input_texts2!=None:
-            messages2=CreateMessage(characteristic, input_texts2)
-            preprocessed_data2=DataPreprocessing(openai, messages2)
-        if input_texts3!=None:
-            messages3=CreateMessage(characteristic, input_texts3)
-            preprocessed_data3=DataPreprocessing(openai, messages3)
-        # 완성된 3개의 전처리 결과를 합침
-        preprocessed_data="SimulationTime \t positionLat \t positionLon \t positionAlt \t speed\n"+preprocessed_data1+"\n"+preprocessed_data2+"\n"+preprocessed_data3
+        input_texts='\n'.join(input_texts)
+        messages=CreateMessage(characteristic, input_texts)
+        preprocessed_data=DataPreprocessing(openai, messages)
     elif characteristic == "인원/장비 수량 변화":
         input_texts=Extract_Event(id, user_idx, log_created, cursor)
         messages=CreateMessage(characteristic, input_texts)
