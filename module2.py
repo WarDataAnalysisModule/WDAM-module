@@ -292,6 +292,7 @@ if __name__ == "__main__":
     
     # 시각 자료 생성
     img_name="" # 시각 자료 파일명
+    img_success=0 # 이미지 생성 여부
     if characteristic=="부대 이동 속도/위치 변화" or characteristic=="부대의 피해 상황":
 
         # 파일명 중복을 피하기 위해 생성 시간으로 파일명 저장
@@ -307,39 +308,43 @@ if __name__ == "__main__":
             # 코드 실행
             exec(code)
             print("python module is making graph for ", characteristic)
+            img_success=1 # 이미지 생성 완료
         except Exception as e:
             # 코드 실행 실패 시 이미지 파일명 초기화
             img_name=""
             print("python module error while making graph for ", characteristic)
     else: # 다른 특성인 경우 이미지 파일 x
-        img_name=""         
-        
-    import boto3
-    # 실행 시 키 입력
-    AWS_ACCESS_KEY_ID=""
-    AWS_SECRET_ACCESS_KEY = ""
-    AWS_DEFAULT_REGION = ""
+        img_name=""    
 
-    client = boto3.client('s3',
-                      aws_access_key_id=AWS_ACCESS_KEY_ID,
-                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                      region_name=AWS_DEFAULT_REGION
-                      )
-    
-    bucket = ''           #버켓 주소, 실행 시 입력
-    key = img_name # s3에 저장될 이름
-
-    # s3 버킷에 이미지 업로드
-    client.upload_file(
-        img_name, bucket, key,
-        ExtraArgs={'ContentType': 'image/png'}  # Content-Type 설정
-    )
-    
     url="" # s3에 업로드된 파일에 접근할 수 있는 경로
-    if img_name!="": # 시각 자료를 성공적으로 생성한 경우 url 생성
-        url="실행 시 버킷 url 입력"+img_name
-    print("url: ",url)
+    if img_success==1:   # 이미지 생성된 경우  
+        import boto3
+        # 실행 시 키 입력
+        AWS_ACCESS_KEY_ID=""
+        AWS_SECRET_ACCESS_KEY = ""
+        AWS_DEFAULT_REGION = ""
+
+        client = boto3.client('s3',
+                          aws_access_key_id=AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                          region_name=AWS_DEFAULT_REGION
+                          )
+    
+        bucket = ''           #버켓 주소, 실행 시 입력
+        key = img_name # s3에 저장될 이름
+
+        # s3 버킷에 이미지 업로드
+        client.upload_file(
+            img_name, bucket, key,
+            ExtraArgs={'ContentType': 'image/png'}  # Content-Type 설정
+        )
+    
+        if img_name!="": # 시각 자료를 성공적으로 생성한 경우 url 생성
+            url="실행 시 버킷 url 입력"+img_name
+        print("url: ",url)
+
 
     # img_url에 시각자료 경로 저장
+    # 생성되지 않은 경우에는 
     with open("img_url.txt","w",encoding="utf-8") as file:
         file.write(url)
