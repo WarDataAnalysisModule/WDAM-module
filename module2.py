@@ -355,6 +355,17 @@ if __name__ == "__main__":
             url="실행 시 버킷 url 입력"+img_name
         print("url: ",url)
 
+        # s3에 파일 업로드 후 시스템에서 제거
+        import os
+        try:
+            os.remove(img_name)
+            print(f"{img_name} File removed.")
+        except FileNotFoundError:
+            print(f"Cannot find File: {img_name}")
+        except Exception as e:
+            print(f"Error while removing file: {e}")
+
+
 
     # img_url에 시각자료 경로 저장
     # 생성되지 않은 경우에는 
