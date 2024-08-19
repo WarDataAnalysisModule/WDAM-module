@@ -213,7 +213,7 @@ param1: 전처리 데이터와 저장할 이미지 파일 명
 """
 def CreateImage(characteristic, preprocessed_data, img_name):
     messages = []
-    if characteristic == "부대 이동 속도/위치 변화":
+    if characteristic == "부대 이동 속도 / 위치 변화":
         messages = [
             {"role": "system", "content": "당신은 목적에 맞는 파이썬 코드를 작성해야 합니다."},
             {"role": "user", "content": 
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     # 시각 자료 생성
     img_name="" # 시각 자료 파일명
     img_success=0 # 이미지 생성 여부
-    if characteristic=="부대 이동 속도/위치 변화" or characteristic=="부대의 피해 상황":
+    if characteristic=="부대 이동 속도 / 위치 변화" or characteristic=="부대의 피해 상황":
 
         # 파일명 중복을 피하기 위해 생성 시간으로 파일명 저장
         from datetime import datetime
