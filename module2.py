@@ -300,7 +300,7 @@ if __name__ == "__main__":
             file.write(result)
     print(f"Data written to {output_file_path}")
 
-    print(result)
+    # print(result)
     
     # 시각 자료 생성
     img_name="" # 시각 자료 파일명
@@ -312,7 +312,7 @@ if __name__ == "__main__":
         img_name=str(datetime.now())+".png" 
         img_name=img_name.replace(":","_")
         # 그래프 그리는 코드 생성
-        messages=CreateImage(characteristic, preprocessed_data, name, img_name)
+        messages=CreateImage(characteristic, preprocessed_data, img_name)
         code=AnaylizeData(openai, messages)
         code = code.replace("```python", " ").replace("```", " ")
         
