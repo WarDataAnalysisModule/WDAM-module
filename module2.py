@@ -98,26 +98,38 @@ def CreateMessage(characteristic, preprocessed_data, name, std_config_path):
     elif characteristic == "부대의 전투력": # 3
         messages = [
             {"role": "system", "content": "당신은 주어진 데이터를 분석해야 합니다."},
-            {"role": "user", "content": "데이터를 분석하여 부대의 전투력이 변화된 시각이 언제부터 언제인지, \
+            {"role": "user", "content": "데이터를 분석하여 부대의 전투력이 변화되기 시작한 시각이 언제부터 언제인지, \
              최초 power와 마지막으로 기록된 power를 말해주고, 이들을 비교해서 전투력이 얼마나 감소했는지를 알려주세요.\
-             최초 power와 마지막으로 기록된 power 사이의 증가량에서 부대의 전투력이 변화된 시각의 증가량을 나눠서 0.1보다 크다면 급격하게 감소되었다고 아래와 같은 형식으로 알려주세요. \
+             최초 power와 마지막으로 기록된 power 사이의 증가량에서 부대의 전투력이 변화된 시각의 증가량을 나눠서 0.1보다 크다면 급격하게 감소되었다고\
+             아래와 같은 형식처럼 분석한 내용을 html으로만 알려주세요. \
              예시: \
-             청군 1대대-1중대의 전투력은 완만하게 감소되었습니다. \
-             청군 1대대-1중대의 전투력이 변화된 시각은 1040부터 8940입니다. \
-             처음 기록된 전투력은 100이었고, 마지막으로 기록된 전투력은 60으로, 초기에 비해 40% 감소하였습니다.\
-             1040부터 8940까지의 시간동안 전투력은 100에서 60으로 감소하였으므로 부대의 전투력은 완만하게 감소되었습니다. "},
+             <body> \
+                <h1>청군 1대대-1중대 전투력 변화 보고</h1> \
+                <h2>전투력의 완만한 감소</h2> \
+                <p>청군 1대대-1중대의 전투력은 1040부터 8940까지의 시간 동안 완만하게 감소하였습니다.</p> \
+                <h2>전투력 변화 시각 및 기록</h2> \
+                <p>전투력이 변화된 시각은 1040부터 8940이며, 처음 기록된 전투력은 100이었고 마지막으로 기록된 전투력은 60으로, 초기 대비 40% 감소하였습니다.</p> \
+                <h2>전투력 감소 분석</h2> \
+                <p>1040부터 8940까지의 시간 동안 전투력이 100에서 60으로 감소한 것은 부대의 전투력이 완만하게 감소되었음을 의미합니다.</p> \
+            </body>"},
             {"role": "assistant", "content": preprocessed_data+"부대 이름: "+name}
         ]
     elif characteristic == "부대의 피해 상황": # 4
         messages = messages = [
             {"role": "system", "content": "당신은 주어진 데이터를 분석해야 합니다."},
-            {"role": "user", "content": "데이터를 분석하여 해당 부대에서 power가 가장 많이 줄어든 시간대와 행동이름을 알려주고 \
-             부대의 주요 BehaviorName의 종류와 해당 BehaviorName이 포함된 데이터의 비율을 알려주세요.\
-             아래와 같은 문장형식으로 알려주세요.\
+            {"role": "user", "content": "데이터를 분석하여 해당 부대에서 바로 이전 데이터와 비교해서 power가 가장 많이 줄어든 시간대와 행동이름을 알려주고 \
+             부대의 주요 BehaviorName의 종류와 해당 BehaviorName이 포함된 데이터만 비율을 알려주세요.\
+             예시와 같이 제목, 두괄식 문장, 문장형식을 이용하여 html으로 표현해주세요.\
              예시: \
-             청군 4중대-2기관총분대는 2:40에 근접전투로 인하여 가장 큰 손실이 발생하였습니다.\
-             청군의 주요 손실 유형은 직접사격이며, 피해 상태의 50%가 직접사격으로 발생하였습니다.\
-             따라서 청군 4중대-2기관총분대는 직접사격으로 인하여 부대의 대부분에 피해가 갔습니다."},
+             <body> \
+                <h1>청군 4중대-2기관총분대 손실 보고</h1> \
+                <h2>근접전투로 인한 주요 손실</h2> \
+                <p>청군 4중대-2기관총분대는 2:40에 근접전투로 인해 가장 큰 손실을 입었습니다.</p> \
+                <h2>주요 손실 유형: 직접사격</h2> \
+                <p>청군의 주요 손실 유형은 직접사격으로, 피해의 50%가 이로 인해 발생하였습니다.</p> \
+                <h2>부대의 피해 상태</h2> \
+                <p>결과적으로, 청군 4중대-2기관총분대는 직접사격으로 인해 부대 대부분이 피해를 입었습니다.</p> \
+            </body>"},
             {"role": "assistant", "content": preprocessed_data+"부대 이름: "+name}
         ]
     elif characteristic == "부대 행동": # 5
@@ -209,7 +221,7 @@ param1: 전처리 데이터와 저장할 이미지 파일 명
 """
 def CreateImage(characteristic, preprocessed_data, img_name):
     messages = []
-    if characteristic == "부대 이동 속도/위치 변화":
+    if characteristic == "부대 이동 속도 / 위치 변화":
         messages = [
             {"role": "system", "content": "당신은 목적에 맞는 파이썬 코드를 작성해야 합니다."},
             {"role": "user", "content": 
@@ -296,18 +308,19 @@ if __name__ == "__main__":
             file.write(result)
     print(f"Data written to {output_file_path}")
 
-    print(result)
+    # print(result)
     
     # 시각 자료 생성
     img_name="" # 시각 자료 파일명
-    if characteristic=="부대 이동 속도/위치 변화" or characteristic=="부대의 피해 상황":
+    img_success=0 # 이미지 생성 여부
+    if characteristic=="부대 이동 속도 / 위치 변화" or characteristic=="부대의 피해 상황":
 
         # 파일명 중복을 피하기 위해 생성 시간으로 파일명 저장
         from datetime import datetime
         img_name=str(datetime.now())+".png" 
         img_name=img_name.replace(":","_")
         # 그래프 그리는 코드 생성
-        messages=CreateImage(characteristic, preprocessed_data, name, img_name)
+        messages=CreateImage(characteristic, preprocessed_data, img_name)
         code=AnaylizeData(openai, messages)
         code = code.replace("```python", " ").replace("```", " ")
         
@@ -315,39 +328,54 @@ if __name__ == "__main__":
             # 코드 실행
             exec(code)
             print("python module is making graph for ", characteristic)
+            img_success=1 # 이미지 생성 완료
         except Exception as e:
             # 코드 실행 실패 시 이미지 파일명 초기화
             img_name=""
             print("python module error while making graph for ", characteristic)
     else: # 다른 특성인 경우 이미지 파일 x
-        img_name=""         
-        
-    import boto3
-    # 실행 시 키 입력
-    AWS_ACCESS_KEY_ID=""
-    AWS_SECRET_ACCESS_KEY = ""
-    AWS_DEFAULT_REGION = ""
+        img_name=""    
 
-    client = boto3.client('s3',
-                      aws_access_key_id=AWS_ACCESS_KEY_ID,
-                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-                      region_name=AWS_DEFAULT_REGION
-                      )
-    
-    bucket = ''           #버켓 주소, 실행 시 입력
-    key = img_name # s3에 저장될 이름
-
-    # s3 버킷에 이미지 업로드
-    client.upload_file(
-        img_name, bucket, key,
-        ExtraArgs={'ContentType': 'image/png'}  # Content-Type 설정
-    )
-    
     url="" # s3에 업로드된 파일에 접근할 수 있는 경로
-    if img_name!="": # 시각 자료를 성공적으로 생성한 경우 url 생성
-        url="실행 시 버킷 url 입력"+img_name
-    print("url: ",url)
+    if img_success==1:   # 이미지 생성된 경우  
+        import boto3
+        # 실행 시 키 입력
+        AWS_ACCESS_KEY_ID=""
+        AWS_SECRET_ACCESS_KEY = ""
+        AWS_DEFAULT_REGION = ""
+
+        client = boto3.client('s3',
+                          aws_access_key_id=AWS_ACCESS_KEY_ID,
+                          aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                          region_name=AWS_DEFAULT_REGION
+                          )
+    
+        bucket = ''           #버켓 주소, 실행 시 입력
+        key = img_name # s3에 저장될 이름
+
+        # s3 버킷에 이미지 업로드
+        client.upload_file(
+            img_name, bucket, key,
+            ExtraArgs={'ContentType': 'image/png'}  # Content-Type 설정
+        )
+    
+        if img_name!="": # 시각 자료를 성공적으로 생성한 경우 url 생성
+            url="실행 시 버킷 url 입력"+img_name
+        print("url: ",url)
+
+        # s3에 파일 업로드 후 시스템에서 제거
+        import os
+        try:
+            os.remove(img_name)
+            print(f"{img_name} File removed.")
+        except FileNotFoundError:
+            print(f"Cannot find File: {img_name}")
+        except Exception as e:
+            print(f"Error while removing file: {e}")
+
+
 
     # img_url에 시각자료 경로 저장
+    # 생성되지 않은 경우에는 
     with open("img_url.txt","w",encoding="utf-8") as file:
         file.write(url)
