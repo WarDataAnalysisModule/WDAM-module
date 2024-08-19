@@ -37,7 +37,7 @@ return: conn, cursor 객체
 """
 def DatabaseConnect():
     conn = mysql.connector.connect(
-
+        
     )
     cursor=conn.cursor(buffered=True) # 커서 생성
     return conn, cursor
@@ -700,6 +700,7 @@ if __name__ == "__main__":
 
     conn, cursor=DatabaseConnect()
 
+    
     if len(sys.argv) not in [4, 5]:
         print("인자 전달 개수 이상")
         sys.exit(1)
